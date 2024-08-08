@@ -2,6 +2,8 @@ package al.infnet.edu.br.backend.controller;
 
 import al.infnet.edu.br.backend.model.Produto;
 import al.infnet.edu.br.backend.service.ProdutoService;
+import al.infnet.edu.br.backend.model.ProdutoHistorico;
+import al.infnet.edu.br.backend.service.ProdutoHistoricoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,9 @@ public class ProdutoController {
 
     @Autowired
     private ProdutoService produtoService;
+
+    @Autowired
+    private ProdutoHistoricoService produtoHistoricoService;
 
     @GetMapping
     public List<Produto> getAllProdutos() {
@@ -49,5 +54,11 @@ public class ProdutoController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/{id}/historico")
+    public ResponseEntity<List<ProdutoHistorico>> getHistoricoByProdutoId(@PathVariable Long id) {
+        List<ProdutoHistorico> historico = produtoHistoricoService.findHistoricoByProdutoId(id);
+        return historico != null ? ResponseEntity.ok(historico) : ResponseEntity.notFound().build();
     }
 }

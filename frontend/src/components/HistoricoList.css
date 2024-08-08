@@ -1,0 +1,12 @@
+.historico-list {
+    padding-left: 20px;
+}
+
+.historico-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.historico-list li {
+    margin-bottom: 5px;
+}
