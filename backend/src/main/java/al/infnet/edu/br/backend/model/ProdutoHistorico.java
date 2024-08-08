@@ -8,14 +8,17 @@ import lombok.Data;
 
 @Entity
 @Data
-public class Produto {
+public class ProdutoHistorico {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private Long produtoId;
     private String nome;
     private String descricao;
     private double preco;
     private String categoria;
+    private String alteracaoTipo;
+    private String alteracaoData;
 
     public Long getId() {
         return id;
@@ -23,6 +26,14 @@ public class Produto {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getProdutoId() {
+        return produtoId;
+    }
+
+    public void setProdutoId(Long produtoId) {
+        this.produtoId = produtoId;
     }
 
     public String getNome() {
@@ -55,5 +66,21 @@ public class Produto {
 
     public void setCategoria(String categoria) {
         this.categoria = categoria;
+    }
+
+    public String getAlteracaoTipo() {
+        return alteracaoTipo;
+    }
+
+    public void setAlteracaoTipo(String alteracaoTipo) {
+        this.alteracaoTipo = alteracaoTipo;
+    }
+
+    public String getAlteracaoData() {
+        return alteracaoData;
+    }
+
+    public void setAlteracaoData(String alteracaoData) {
+        this.alteracaoData = alteracaoData;
     }
 }

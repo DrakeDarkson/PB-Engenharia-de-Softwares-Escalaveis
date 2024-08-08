@@ -1,18 +1,18 @@
 package al.infnet.edu.br.backend.controller;
 
-import java.util.List;
-import java.util.Optional;
-
+import al.infnet.edu.br.backend.model.Produto;
+import al.infnet.edu.br.backend.service.ProdutoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import al.infnet.edu.br.backend.model.Produto;
-import al.infnet.edu.br.backend.service.ProdutoService;
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/produtos")
+@RequestMapping("/produtos")
 public class ProdutoController {
+
     @Autowired
     private ProdutoService produtoService;
 
@@ -23,40 +23,28 @@ public class ProdutoController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Produto> getProdutoById(@PathVariable Long id) {
-        Optional<Produto> produto = produtoService.findById(id);
-        if (produto.isPresent()) {
-            return ResponseEntity.ok(produto.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        Produto produto = produtoService.findById(id);
+        return produto != null ? ResponseEntity.ok(produto) : ResponseEntity.notFound().build();
     }
 
     @PostMapping
-    public Produto createProduto(@RequestBody Produto produto) {
-        return produtoService.save(produto);
+    public ResponseEntity<Produto> createProduto(@RequestBody Produto produto) {
+        Produto savedProduto = produtoService.save(produto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedProduto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Produto> updateProduto(@PathVariable Long id, @RequestBody Produto produtoDetails) {
-        Optional<Produto> produto = produtoService.findById(id);
-        if (produto.isPresent()) {
-            Produto updatedProduto = produto.get();
-            updatedProduto.setNome(produtoDetails.getNome());
-            updatedProduto.setDescricao(produtoDetails.getDescricao());
-            updatedProduto.setPreco(produtoDetails.getPreco());
-            updatedProduto.setCategoria(produtoDetails.getCategoria());
-            produtoService.save(updatedProduto);
-            return ResponseEntity.ok(updatedProduto);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Produto> updateProduto(@PathVariable Long id, @RequestBody Produto produto) {
+        produto.setId(id);
+        Produto updatedProduto = produtoService.save(produto);
+        return ResponseEntity.ok(updatedProduto);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduto(@PathVariable Long id) {
-        Optional<Produto> produto = produtoService.findById(id);
-        if (produto.isPresent()) {
-            produtoService.delete(produto.get());
+        Produto produto = produtoService.findById(id);
+        if (produto != null) {
+            produtoService.deleteById(id);
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
