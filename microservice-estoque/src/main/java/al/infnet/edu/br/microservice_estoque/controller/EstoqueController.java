@@ -26,6 +26,12 @@ public class EstoqueController {
         return ResponseEntity.ok(estoque);
     }
 
+    @GetMapping("/produto/{produtoId}")
+    public ResponseEntity<Estoque> obterEstoquePorProdutoId(@PathVariable Long produtoId) {
+        Estoque estoque = estoqueService.obterEstoquePorProdutoId(produtoId);
+        return ResponseEntity.ok(estoque);
+    }
+
     @PostMapping
     public ResponseEntity<Estoque> adicionarEstoque(@RequestBody Estoque estoque) {
         Estoque novoEstoque = estoqueService.adicionarEstoque(estoque);
@@ -36,6 +42,19 @@ public class EstoqueController {
     public ResponseEntity<Estoque> atualizarEstoque(@PathVariable Long id, @RequestBody Estoque estoque) {
         Estoque estoqueAtualizado = estoqueService.atualizarEstoque(id, estoque);
         if (estoqueAtualizado != null) {
+            return ResponseEntity.ok(estoqueAtualizado);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/produto/{produtoId}")
+    public ResponseEntity<Estoque> atualizarEstoquePorProdutoId(
+            @PathVariable Long produtoId, @RequestBody Estoque estoque) {
+        Estoque estoqueExistente = estoqueService.obterEstoquePorProdutoId(produtoId);
+        if (estoqueExistente != null) {
+            estoque.setId(estoqueExistente.getId());
+            Estoque estoqueAtualizado = estoqueService.atualizarEstoque(estoqueExistente.getId(), estoque);
             return ResponseEntity.ok(estoqueAtualizado);
         } else {
             return ResponseEntity.notFound().build();

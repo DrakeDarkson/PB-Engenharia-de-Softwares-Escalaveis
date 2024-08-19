@@ -1,5 +1,8 @@
 package al.infnet.edu.br.backend.service;
 
+import al.infnet.edu.br.backend.client.EstoqueClient;
+import al.infnet.edu.br.backend.dto.EstoqueDTO;
+import al.infnet.edu.br.backend.dto.ProdutoDTO;
 import al.infnet.edu.br.backend.model.Produto;
 import al.infnet.edu.br.backend.model.ProdutoHistorico;
 import al.infnet.edu.br.backend.repository.ProdutoHistoricoRepository;
@@ -18,6 +21,9 @@ public class ProdutoService {
 
     @Autowired
     private ProdutoHistoricoRepository produtoHistoricoRepository;
+
+    @Autowired
+    private EstoqueClient estoqueClient;
 
     public List<Produto> findAll() {
         return produtoRepository.findAll();
@@ -56,5 +62,31 @@ public class ProdutoService {
             historico.setAlteracaoData(LocalDateTime.now().toString());
             produtoHistoricoRepository.save(historico);
         }
+    }
+
+    public ProdutoDTO adicionarProduto(ProdutoDTO produtoDTO) {
+        // Lógica para adicionar o produto
+        Produto produto = new Produto();
+        produto.setNome(produtoDTO.getNome());
+        produto.setDescricao(produtoDTO.getDescricao());
+        produto.setPreco(produtoDTO.getPreco());
+        produtoRepository.save(produto);
+
+        // Adicionar estoque associado
+        EstoqueDTO estoqueDTO = new EstoqueDTO();
+        estoqueDTO.setProdutoId(produto.getId());
+        estoqueDTO.setQuantidade(produtoDTO.getQuantidadeInicial());
+
+        estoqueClient.adicionarEstoque(estoqueDTO);
+
+        return produtoDTO;
+    }
+
+    public EstoqueDTO consultarEstoque(Long produtoId) {
+        return estoqueClient.obterEstoque(produtoId);
+    }
+
+    public EstoqueDTO atualizarEstoque(Long produtoId, int quantidade) {
+        return estoqueClient.atualizarEstoque(produtoId, quantidade);
     }
 }

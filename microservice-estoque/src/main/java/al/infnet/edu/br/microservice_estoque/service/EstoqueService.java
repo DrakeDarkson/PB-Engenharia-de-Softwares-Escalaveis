@@ -20,6 +20,10 @@ public class EstoqueService {
         return estoqueRepository.findById(id).orElseThrow(() -> new RuntimeException("Estoque não encontrado"));
     }
 
+    public Estoque obterEstoquePorProdutoId(Long produtoId) {
+        return estoqueRepository.findByProdutoId(produtoId).orElseThrow(() -> new RuntimeException("Estoque não encontrado para o produto com ID: " + produtoId));
+    }
+
     public Estoque adicionarEstoque(Estoque estoque) {
         return estoqueRepository.save(estoque);
     }
