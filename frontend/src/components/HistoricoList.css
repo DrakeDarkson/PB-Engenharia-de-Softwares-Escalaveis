@@ -1,5 +1,14 @@
 .historico-list {
-    padding-left: 20px;
+    padding: 20px;
+    background: #fafafa;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.historico-list h3 {
+    font-size: 1.6em;
+    color: #4caf50;
+    margin-bottom: 10px;
 }
 
 .historico-list ul {
@@ -8,5 +17,8 @@
 }
 
 .historico-list li {
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    color: #333;
+    font-size: 1em;
+    font-family: 'Roboto', sans-serif;
 }

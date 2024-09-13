@@ -3,10 +3,15 @@ package al.infnet.edu.br.backend.service;
 import al.infnet.edu.br.backend.client.EstoqueClient;
 import al.infnet.edu.br.backend.dto.EstoqueDTO;
 import al.infnet.edu.br.backend.dto.ProdutoDTO;
+import al.infnet.edu.br.backend.events.ProdutoCriadoEvent;
+import al.infnet.edu.br.backend.events.ProdutoAtualizadoEvent;
+import al.infnet.edu.br.backend.events.ProdutoRemovidoEvent;
 import al.infnet.edu.br.backend.model.Produto;
 import al.infnet.edu.br.backend.model.ProdutoHistorico;
 import al.infnet.edu.br.backend.repository.ProdutoHistoricoRepository;
 import al.infnet.edu.br.backend.repository.ProdutoRepository;
+import al.infnet.edu.br.backend.service.ProdutoService;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +30,14 @@ public class ProdutoService {
     @Autowired
     private EstoqueClient estoqueClient;
 
+    @Autowired
+    private AmqpTemplate amqpTemplate;
+
+    @Autowired
+    public ProdutoService(AmqpTemplate amqpTemplate) {
+        this.amqpTemplate = amqpTemplate;
+    }
+
     public List<Produto> findAll() {
         return produtoRepository.findAll();
     }
@@ -41,6 +54,16 @@ public class ProdutoService {
         historico.setAlteracaoTipo(produto.getId() == null ? "Criação" : "Atualização");
         historico.setAlteracaoData(LocalDateTime.now().toString());
         produtoHistoricoRepository.save(historico);
+
+        ProdutoCriadoEvent produtoCriadoEvent = new ProdutoCriadoEvent(
+            savedProduto.getId(),
+            savedProduto.getNome(),
+            savedProduto.getCategoria(),
+            savedProduto.getPreco(),
+            savedProduto.getDescricao()
+        );
+        amqpTemplate.convertAndSend("product.exchange", "product.created", produtoCriadoEvent);
+
         return savedProduto;
     }
 
@@ -61,23 +84,31 @@ public class ProdutoService {
             historico.setAlteracaoTipo("Exclusão");
             historico.setAlteracaoData(LocalDateTime.now().toString());
             produtoHistoricoRepository.save(historico);
+
+            ProdutoRemovidoEvent produtoRemovidoEvent = new ProdutoRemovidoEvent(produto.getId());
+            amqpTemplate.convertAndSend("product.exchange", "product.deleted", produtoRemovidoEvent);
         }
     }
 
     public ProdutoDTO adicionarProduto(ProdutoDTO produtoDTO) {
-        // Lógica para adicionar o produto
         Produto produto = new Produto();
         produto.setNome(produtoDTO.getNome());
         produto.setDescricao(produtoDTO.getDescricao());
         produto.setPreco(produtoDTO.getPreco());
         produtoRepository.save(produto);
 
-        // Adicionar estoque associado
         EstoqueDTO estoqueDTO = new EstoqueDTO();
         estoqueDTO.setProdutoId(produto.getId());
         estoqueDTO.setQuantidade(produtoDTO.getQuantidadeInicial());
 
-        estoqueClient.adicionarEstoque(estoqueDTO);
+        ProdutoCriadoEvent produtoCriadoEvent = new ProdutoCriadoEvent(
+            produto.getId(),
+            produto.getNome(),
+            produto.getCategoria(),
+            produto.getPreco(),
+            produto.getDescricao()
+        );
+        amqpTemplate.convertAndSend("product.exchange", "product.created", produtoCriadoEvent);
 
         return produtoDTO;
     }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ProdutoService from '../services/ProdutoService';
 import HistoricoService from '../services/HistoricoService';
 import HistoricoList from './HistoricoList';
+import Estoque from './Estoque';
 import './ProdutoList.css';
 
 const ProdutoList = () => {
@@ -15,7 +16,7 @@ const ProdutoList = () => {
                 setProdutos(response.data);
             })
             .catch((error) => {
-                console.error("There was an error fetching the produtos!", error);
+                console.error("Erro ao buscar os produtos!", error);
             });
     }, []);
 
@@ -29,7 +30,7 @@ const ProdutoList = () => {
                     }));
                 })
                 .catch((error) => {
-                    console.error(`There was an error fetching the historico for produto ${produto.id}!`, error);
+                    console.error(`Erro ao buscar o histórico do produto ${produto.id}!`, error);
                 });
         });
     }, [produtos]);
@@ -47,15 +48,24 @@ const ProdutoList = () => {
             <ul>
                 {produtos.map((produto) => (
                     <li key={produto.id}>
-                        <div onClick={() => handleToggleHistorico(produto.id)} style={{ cursor: 'pointer' }}>
+                        <div>
                             <h3>{produto.nome}</h3>
                             <p>{produto.descricao}</p>
                             <p><strong>Categoria:</strong> {produto.categoria}</p>
                             <p><strong>Preço:</strong> R$ {produto.preco.toFixed(2)}</p>
+                            <Estoque produtoId={produto.id} />
+                            <button
+                                className="historico-button"
+                                onClick={() => handleToggleHistorico(produto.id)}
+                            >
+                                {expandido[produto.id] ? 'Ocultar Histórico' : 'Mostrar Histórico'}
+                            </button>
+                            {expandido[produto.id] && (
+                                <div className="historico-list">
+                                    <HistoricoList historico={historico[produto.id] || []} />
+                                </div>
+                            )}
                         </div>
-                        {expandido[produto.id] && (
-                            <HistoricoList historico={historico[produto.id] || []} />
-                        )}
                     </li>
                 ))}
             </ul>
