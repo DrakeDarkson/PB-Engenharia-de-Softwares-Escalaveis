@@ -2,6 +2,8 @@ package al.infnet.edu.br.microservice_estoque.service;
 
 import al.infnet.edu.br.microservice_estoque.model.Estoque;
 import al.infnet.edu.br.microservice_estoque.repository.EstoqueRepository;
+import al.infnet.edu.br.microservice_estoque.events.EstoqueAtualizadoEvent;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +11,7 @@ import java.util.List;
 
 @Service
 public class EstoqueService {
+
     @Autowired
     private EstoqueRepository estoqueRepository;
 
@@ -44,5 +47,13 @@ public class EstoqueService {
         } else {
             return false;
         }
+    }
+
+    @RabbitListener(queues = "stock.updated.queue")
+    public void receberEstoqueAtualizado(EstoqueAtualizadoEvent evento) {
+        Estoque estoque = estoqueRepository.findByProdutoId(evento.getProdutoId())
+            .orElse(new Estoque(evento.getProdutoId(), 0));
+        estoque.setQuantidade(evento.getQuantidade());
+        estoqueRepository.save(estoque);
     }
 }

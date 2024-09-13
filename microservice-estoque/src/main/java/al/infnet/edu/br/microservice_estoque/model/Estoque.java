@@ -13,6 +13,13 @@ public class Estoque {
     private Long produtoId;
     private int quantidade;
 
+    public Estoque() {}
+
+    public Estoque(Long produtoId, int quantidade) {
+        this.produtoId = produtoId;
+        this.quantidade = quantidade;
+    }
+
     public Long getId() {
         return id;
     }
