@@ -1,0 +1,123 @@
+services:
+  # RabbitMQ - Broker de mensagens para os eventos
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbit-server
+    ports:
+      - "5672:5672"   # Porta para conexões AMQP
+      - "15672:15672" # Porta para o painel de gerenciamento
+    networks:
+      - microsservicos_network
+
+  # PostgreSQL - Banco de dados para Produto Service
+  postgres-produto:
+    image: postgres:14
+    container_name: postgres-produto
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: senha
+      POSTGRES_DB: produto-database
+    volumes:
+      - ./postgres-data-produto:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - microsservicos_network
+
+  # PostgreSQL - Banco de dados para Estoque Service
+  postgres-estoque:
+    image: postgres:14
+    container_name: postgres-estoque
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: senha
+      POSTGRES_DB: estoque-database
+    volumes:
+      - ./postgres-data-estoque:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - microsservicos_network
+
+  # PostgreSQL - Banco de dados para Historico Service
+  postgres-historico:
+    image: postgres:14
+    container_name: postgres-historico
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: senha
+      POSTGRES_DB: historico-database
+    volumes:
+      - ./postgres-data-historico:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
+    networks:
+      - microsservicos_network
+
+  # Adminer - Interface web para PostgreSQL
+  adminer:
+    image: adminer
+    container_name: adminer
+    ports:
+      - "8080:8080"
+    networks:
+      - microsservicos_network
+    depends_on:
+      - postgres-produto
+      - postgres-estoque
+      - postgres-historico
+
+  # Eureka Server - Serviço de descoberta
+  eureka-server:
+    image: brenomota/eureka:latest
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - microsservicos_network
+
+  # Produto Service
+  produto-service:
+    image: brenomota/produto-service:latest
+    networks:
+      - microsservicos_network
+    depends_on:
+      - eureka-server
+      - rabbitmq
+      - postgres-produto
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-produto:5432/produto-database
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: senha
+
+  # Estoque Service
+  estoque-service:
+    image: brenomota/estoque-service:latest
+    networks:
+      - microsservicos_network
+    depends_on:
+      - eureka-server
+      - rabbitmq
+      - postgres-estoque
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-estoque:5432/estoque-database
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: senha
+
+  # Historico Service
+  historico-service:
+    image: brenomota/historico-service:latest
+    networks:
+      - microsservicos_network
+    depends_on:
+      - eureka-server
+      - rabbitmq
+      - postgres-historico
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-historico:5432/historico-database
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: senha
+
+networks:
+  microsservicos_network:
+    driver: bridge
