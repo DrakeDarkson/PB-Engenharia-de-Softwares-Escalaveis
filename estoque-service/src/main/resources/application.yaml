@@ -19,7 +19,9 @@ spring:
     password: guest
     exchange: stock.exchange
     queues:
+      stockCreatedQueue: stock.created.queue
       stockUpdatedQueue: stock.updated.queue
+      stockDeletedQueue: stock.deleted.queue
 server:
   port: 8081
 eureka:

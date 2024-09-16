@@ -30,7 +30,7 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>al.infnet.edu.br.eventlibrary</groupId>
+            <groupId>al.infnet.edu.br</groupId>
             <artifactId>event-library</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>

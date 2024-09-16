@@ -1,0 +1,8 @@
+al\infnet\edu\br\eventlibrary\events\EstoqueAtualizadoEvent.class
+al\infnet\edu\br\eventlibrary\events\ProdutoRemovidoEvent.class
+al\infnet\edu\br\eventlibrary\events\HistoricoAtualizadoEvent.class
+al\infnet\edu\br\eventlibrary\events\EstoqueCriadoEvent.class
+al\infnet\edu\br\eventlibrary\events\ProdutoCriadoEvent.class
+al\infnet\edu\br\eventlibrary\events\EstoqueRemovidoEvent.class
+al\infnet\edu\br\eventlibrary\events\HistoricoCriadoEvent.class
+al\infnet\edu\br\eventlibrary\events\ProdutoAtualizadoEvent.class

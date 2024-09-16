@@ -3,71 +3,49 @@ package al.infnet.edu.br.estoque_service.controller;
 import al.infnet.edu.br.estoque_service.model.Estoque;
 import al.infnet.edu.br.estoque_service.service.EstoqueService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/estoques")
+@RequestMapping("/estoques")
 public class EstoqueController {
+
+    private final EstoqueService estoqueService;
+
     @Autowired
-    private EstoqueService estoqueService;
-
-    @GetMapping
-    public List<Estoque> listarEstoques() {
-        return estoqueService.listarEstoques();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Estoque> obterEstoque(@PathVariable Long id) {
-        Estoque estoque = estoqueService.obterEstoque(id);
-        return ResponseEntity.ok(estoque);
-    }
-
-    @GetMapping("/produto/{produtoId}")
-    public ResponseEntity<Estoque> obterEstoquePorProdutoId(@PathVariable Long produtoId) {
-        Estoque estoque = estoqueService.obterEstoquePorProdutoId(produtoId);
-        return ResponseEntity.ok(estoque);
+    public EstoqueController(EstoqueService estoqueService) {
+        this.estoqueService = estoqueService;
     }
 
     @PostMapping
-    public ResponseEntity<Estoque> adicionarEstoque(@RequestBody Estoque estoque) {
-        Estoque novoEstoque = estoqueService.adicionarEstoque(estoque);
-        return ResponseEntity.status(HttpStatus.CREATED).body(novoEstoque);
+    public ResponseEntity<Estoque> criarEstoque(@RequestBody Estoque estoque) {
+        Estoque novoEstoque = estoqueService.criarEstoque(estoque);
+        return ResponseEntity.ok(novoEstoque);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Estoque> buscarEstoquePorId(@PathVariable Long id) {
+        Optional<Estoque> estoque = estoqueService.buscarEstoquePorId(id);
+        return estoque.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/produto/{produtoId}")
+    public ResponseEntity<Estoque> buscarEstoquePorProdutoId(@PathVariable Long produtoId) {
+        Optional<Estoque> estoque = estoqueService.buscarEstoquePorProdutoId(produtoId);
+        return estoque.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Estoque> atualizarEstoque(@PathVariable Long id, @RequestBody Estoque estoque) {
         Estoque estoqueAtualizado = estoqueService.atualizarEstoque(id, estoque);
-        if (estoqueAtualizado != null) {
-            return ResponseEntity.ok(estoqueAtualizado);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @PutMapping("/produto/{produtoId}")
-    public ResponseEntity<Estoque> atualizarEstoquePorProdutoId(
-            @PathVariable Long produtoId, @RequestBody Estoque estoque) {
-        Estoque estoqueExistente = estoqueService.obterEstoquePorProdutoId(produtoId);
-        if (estoqueExistente != null) {
-            estoque.setId(estoqueExistente.getId());
-            Estoque estoqueAtualizado = estoqueService.atualizarEstoque(estoqueExistente.getId(), estoque);
-            return ResponseEntity.ok(estoqueAtualizado);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return estoqueAtualizado != null ? ResponseEntity.ok(estoqueAtualizado) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluirEstoque(@PathVariable Long id) {
-        boolean excluido = estoqueService.excluirEstoque(id);
-        if (excluido) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Void> deletarEstoque(@PathVariable Long id) {
+        estoqueService.deletarEstoque(id);
+        return ResponseEntity.noContent().build();
     }
 }

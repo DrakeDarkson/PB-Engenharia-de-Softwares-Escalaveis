@@ -5,11 +5,18 @@ import al.infnet.edu.br.eventlibrary.events.ProdutoAtualizadoEvent;
 import al.infnet.edu.br.eventlibrary.events.ProdutoRemovidoEvent;
 import al.infnet.edu.br.eventlibrary.events.HistoricoCriadoEvent;
 import al.infnet.edu.br.eventlibrary.events.HistoricoAtualizadoEvent;
+import al.infnet.edu.br.eventlibrary.events.EstoqueCriadoEvent;
+import al.infnet.edu.br.eventlibrary.events.EstoqueAtualizadoEvent;
+import al.infnet.edu.br.eventlibrary.events.EstoqueRemovidoEvent;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Component
 public class ProdutoListener {
@@ -20,20 +27,23 @@ public class ProdutoListener {
     @RabbitListener(queues = "product.created.queue")
     public void onProdutoCriado(ProdutoCriadoEvent evento) {
         HistoricoCriadoEvent historicoCriadoEvent = new HistoricoCriadoEvent(
+            Math.abs(UUID.randomUUID().getMostSignificantBits()),
             evento.getId(),
             evento.getNome(),
             evento.getCategoria(),
             evento.getPreco(),
             evento.getDescricao(),
-            "Criação"
+            "Criação",
+            LocalDateTime.now()
         );
         amqpTemplate.convertAndSend("historico.exchange", "historico.criado", historicoCriadoEvent);
 
-        EstoqueAtualizadoEvent estoqueAtualizadoEvent = new EstoqueAtualizadoEvent(
+        EstoqueCriadoEvent estoqueCriadoEvent = new EstoqueCriadoEvent(
+            Math.abs(UUID.randomUUID().getMostSignificantBits()),
             evento.getId(),
-            0 // Quantidade
+            0
         );
-        amqpTemplate.convertAndSend("stock.exchange", "stock.atualizado", estoqueAtualizadoEvent);
+        amqpTemplate.convertAndSend("stock.exchange", "stock.criado", estoqueCriadoEvent);
     }
 
     @RabbitListener(queues = "product.updated.queue")
@@ -44,17 +54,17 @@ public class ProdutoListener {
             evento.getCategoria(),
             evento.getPreco(),
             evento.getDescricao(),
-            "Atualização"
+            "Atualização",
+            LocalDateTime.now()
         );
         amqpTemplate.convertAndSend("historico.exchange", "historico.atualizado", historicoAtualizadoEvent);
     }
 
     @RabbitListener(queues = "product.deleted.queue")
     public void onProdutoRemovido(ProdutoRemovidoEvent evento) {
-        EstoqueAtualizadoEvent estoqueAtualizadoEvent = new EstoqueAtualizadoEvent(
-            evento.getId(),
-            null // Quantidade
+        EstoqueRemovidoEvent estoqueRemovidoEvent = new EstoqueRemovidoEvent(
+            evento.getId()
         );
-        amqpTemplate.convertAndSend("stock.exchange", "stock.deletado", estoqueAtualizadoEvent);
+        amqpTemplate.convertAndSend("stock.exchange", "stock.removido", estoqueRemovidoEvent);
     }
 }

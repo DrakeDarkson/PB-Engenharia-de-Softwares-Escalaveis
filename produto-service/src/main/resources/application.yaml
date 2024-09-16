@@ -21,6 +21,7 @@ spring:
     queues:
       productCreatedQueue: product.created.queue
       productUpdatedQueue: product.updated.queue
+      productDeletedQueue: product.deleted.queue
 server:
   port: 8080
 eureka:

@@ -1,39 +1,29 @@
 package al.infnet.edu.br.estoque_service;
 
-import al.infnet.edu.br.estoque_service.model.Estoque;
-import al.infnet.edu.br.estoque_service.service.EstoqueService;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
+import al.infnet.edu.br.estoque_service.model.Estoque;
+import al.infnet.edu.br.estoque_service.repository.EstoqueRepository;
+import al.infnet.edu.br.estoque_service.service.EstoqueService;
 
-import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.when;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
 public class EstoqueServiceApplicationTests {
 
-    @Autowired
-    private TestRestTemplate restTemplate;
-
     @Mock
+    private EstoqueRepository estoqueRepository;
+
+    @InjectMocks
     private EstoqueService estoqueService;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
@@ -42,82 +32,65 @@ public class EstoqueServiceApplicationTests {
     }
 
     @Test
-    void testListarEstoques() {
-        Estoque estoque = new Estoque(1L, 1L, 100);
-        when(estoqueService.listarEstoques()).thenReturn(Collections.singletonList(estoque));
+    public void testCriarEstoque() {
+        Estoque estoque = new Estoque(null, 1L, 10);
+        when(estoqueRepository.save(any(Estoque.class))).thenReturn(estoque);
 
-        ResponseEntity<Estoque[]> response = restTemplate.getForEntity("/api/estoques", Estoque[].class);
-        
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(1, response.getBody().length);
-        assertEquals(estoque.getId(), response.getBody()[0].getId());
+        Estoque resultado = estoqueService.criarEstoque(estoque);
+
+        assertNotNull(resultado);
+        assertEquals(1L, resultado.getProdutoId());
+        assertEquals(10, resultado.getQuantidade());
+        verify(estoqueRepository, times(1)).save(estoque);
     }
 
     @Test
-    void testObterEstoquePorId() {
-        Estoque estoque = new Estoque(1L, 1L, 100);
-        when(estoqueService.obterEstoque(anyLong())).thenReturn(estoque);
+    public void testBuscarEstoquePorId() {
+        Estoque estoque = new Estoque(1L, 1L, 10);
+        when(estoqueRepository.findById(1L)).thenReturn(Optional.of(estoque));
 
-        ResponseEntity<Estoque> response = restTemplate.getForEntity("/api/estoques/1", Estoque.class);
-        
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(estoque.getId(), response.getBody().getId());
+        Optional<Estoque> resultado = estoqueService.buscarEstoquePorId(1L);
+
+        assertTrue(resultado.isPresent());
+        assertEquals(1L, resultado.get().getId());
+        assertEquals(1L, resultado.get().getProdutoId());
+        assertEquals(10, resultado.get().getQuantidade());
+        verify(estoqueRepository, times(1)).findById(1L);
     }
 
     @Test
-    void testObterEstoquePorProdutoId() {
-        Estoque estoque = new Estoque(1L, 1L, 100);
-        when(estoqueService.obterEstoquePorProdutoId(anyLong())).thenReturn(estoque);
+    public void testBuscarEstoquePorProdutoId() {
+        Estoque estoque = new Estoque(1L, 1L, 10);
+        when(estoqueRepository.findByProdutoId(1L)).thenReturn(Optional.of(estoque));
 
-        ResponseEntity<Estoque> response = restTemplate.getForEntity("/api/estoques/produto/1", Estoque.class);
-        
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(estoque.getProdutoId(), response.getBody().getProdutoId());
-    }
-    
-    @Test
-    void testAdicionarEstoque() {
-        Estoque estoque = new Estoque(1L, 1L, 100);
-        when(estoqueService.adicionarEstoque(any(Estoque.class))).thenReturn(estoque);
+        Optional<Estoque> resultado = estoqueService.buscarEstoquePorProdutoId(1L);
 
-        ResponseEntity<Estoque> response = restTemplate.postForEntity("/api/estoques", estoque, Estoque.class);
-        
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(estoque.getId(), response.getBody().getId());
+        assertTrue(resultado.isPresent());
+        assertEquals(1L, resultado.get().getProdutoId());
+        assertEquals(10, resultado.get().getQuantidade());
+        verify(estoqueRepository, times(1)).findByProdutoId(1L);
     }
 
     @Test
-    void testAtualizarEstoque() {
-        Estoque estoque = new Estoque(1L, 1L, 100);
-        when(estoqueService.atualizarEstoque(anyLong(), any(Estoque.class))).thenReturn(estoque);
+    public void testAtualizarEstoque() {
+        Estoque estoqueExistente = new Estoque(1L, 1L, 10);
+        Estoque estoqueAtualizado = new Estoque(1L, 1L, 20);
+        when(estoqueRepository.existsById(1L)).thenReturn(true);
+        when(estoqueRepository.save(any(Estoque.class))).thenReturn(estoqueAtualizado);
 
-        ResponseEntity<Estoque> response = restTemplate.exchange(
-            "/api/estoques/1", 
-            HttpMethod.PUT, 
-            new HttpEntity<>(estoque), 
-            Estoque.class
-        );
-        
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(estoque.getId(), response.getBody().getId());
+        Estoque resultado = estoqueService.atualizarEstoque(1L, estoqueAtualizado);
+
+        assertNotNull(resultado);
+        assertEquals(20, resultado.getQuantidade());
+        verify(estoqueRepository, times(1)).save(estoqueAtualizado);
     }
 
     @Test
-    void testExcluirEstoque() {
-        when(estoqueService.excluirEstoque(anyLong())).thenReturn(true);
+    public void testDeletarEstoque() {
+        doNothing().when(estoqueRepository).deleteById(1L);
 
-        ResponseEntity<Void> response = restTemplate.exchange(
-            "/api/estoques/1", 
-            HttpMethod.DELETE, 
-            null, 
-            Void.class
-        );
-        
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+        estoqueService.deletarEstoque(1L);
+
+        verify(estoqueRepository, times(1)).deleteById(1L);
     }
 }

@@ -19,7 +19,8 @@ spring:
     password: guest
     exchange: historico.exchange
     queues:
-      historicoQueue: historico.queue
+      historicoCreatedQueue: historico.created.queue
+      historicoUpdatedQueue: historico.updated.queue
 server:
   port: 8082
 eureka:

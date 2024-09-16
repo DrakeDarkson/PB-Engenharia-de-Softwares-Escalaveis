@@ -13,6 +13,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,7 +41,7 @@ public class ProdutoServiceApplicationTests {
         produto.setId(1L);
         produto.setNome("Produto Teste");
         produto.setDescricao("Descrição do produto teste");
-        produto.setPreco(100.0);
+        produto.setPreco(BigDecimal.valueOf(100.0));
         produto.setCategoria("Categoria Teste");
     }
 
