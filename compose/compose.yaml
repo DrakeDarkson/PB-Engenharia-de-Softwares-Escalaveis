@@ -118,6 +118,20 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: senha
 
+  # Gateway Service
+  gateway:
+    image: brenomota/gateway:latest
+    container_name: gateway
+    ports:
+      - "9999:9999"
+    networks:
+      - microsservicos_network
+    depends_on:
+      - eureka-server
+    environment:
+      SPRING_CLOUD_CONFIG_ENABLED: "false"
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
 networks:
   microsservicos_network:
     driver: bridge

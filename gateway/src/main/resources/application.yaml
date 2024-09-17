@@ -1,0 +1,33 @@
+server:
+  port: 9999
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      routes:
+        - id: produto-service
+          uri: lb://PRODUTO-SERVICE
+          predicates:
+            - Path=/produtos/**
+        - id: estoque-service
+          uri: lb://ESTOQUE-SERVICE
+          predicates:
+            - Path=/estoques/**
+        - id: historico-service
+          uri: lb://HISTORICO-SERVICE
+          predicates:
+            - Path=/historico/**
+    discovery:
+      locator:
+        enabled: true
+        lower-case-service-id: true
+    config:
+      enabled: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+      #defaultZone: http://EUREKA-SERVER:8761/eureka
