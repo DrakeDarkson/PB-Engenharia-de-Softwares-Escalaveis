@@ -49,6 +49,7 @@ public class ProdutoListener {
     @RabbitListener(queues = "product.updated.queue")
     public void onProdutoAtualizado(ProdutoAtualizadoEvent evento) {
         HistoricoAtualizadoEvent historicoAtualizadoEvent = new HistoricoAtualizadoEvent(
+            Math.abs(UUID.randomUUID().getMostSignificantBits()),
             evento.getId(),
             evento.getNome(),
             evento.getCategoria(),
